@@ -73,28 +73,19 @@ public class Spliting {
 //        System.out.println(secondmallonOrder.isPresent());
 
         if (firstmallonOrder.isPresent() && secondmallonOrder.isEmpty()){
-           exchangeOrder = new ExchangeOrder(order.getOrderId(),
-                    order.getProduct(),
-                    firstmallonOrder.get().getQuantity(),
-                    order.getPrice(),
-                    order.getSide(),
-                    order.getStatus(),
-                    "1");
 
-//           exchangeOrder = createExchangeObject(order.getOrderId(),order.getProduct(),3)
+            exchangeOrder = createExchangeObject(order.getOrderId(),order.getProduct(),firstmallonOrder.get().getQuantity(),
+                            order.getPrice(),order.getSide(),order.getStatus(),"1");
 
-            pushToQueue(changeObjectToString(exchangeOrder));
-            System.out.println(exchangeOrder +" 1 ");
+           pushToQueue(changeObjectToString(exchangeOrder));
+           System.out.println(exchangeOrder +" 1 ");
         }
 
         else if (firstmallonOrder.isEmpty() && secondmallonOrder.isPresent()){
-            exchangeOrder = new ExchangeOrder(order.getOrderId(),
-                    order.getProduct(),
-                    secondmallonOrder.get().getQuantity(),
-                    order.getPrice(),
-                    order.getSide(),
-                    order.getStatus(),
-                    "2");
+
+            exchangeOrder = createExchangeObject(order.getOrderId(),order.getProduct(),secondmallonOrder.get().getQuantity(),
+                    order.getPrice(),order.getSide(),order.getStatus(),"2");
+
             pushToQueue(changeObjectToString(exchangeOrder));
             System.out.println(exchangeOrder+" 2 ");
         }
@@ -116,37 +107,28 @@ public class Spliting {
 
                     //Buy all from here
 
-                   exchangeOrder = new ExchangeOrder(order.getOrderId(),
-                                                    order.getProduct(),
-                                                    order.getQuantity(),
-                                                    order.getPrice(),
-                                                    order.getSide(),
-                                                    order.getStatus(),
-                                                    "1");
+                    exchangeOrder = createExchangeObject(order.getOrderId(),order.getProduct(),order.getQuantity(),
+                            order.getPrice(),order.getSide(),order.getStatus(),"1");
+
                     pushToQueue(changeObjectToString(exchangeOrder));
                     System.out.println(exchangeOrder+" 3 ");
                     
                 }
                 else{
 
-                    exchangeOrder = new ExchangeOrder(order.getOrderId(),
-                                                    order.getProduct(),
-                                                    buyQuantity,
-                                                    order.getPrice(),
-                                                    order.getSide(),
-                                                    order.getStatus(),
-                                                    "1");
+                    //How much you can get
+                    exchangeOrder = createExchangeObject(order.getOrderId(),order.getProduct(),buyQuantity,
+                            order.getPrice(),order.getSide(),order.getStatus(),"1");
                     pushToQueue(changeObjectToString(exchangeOrder));
+                    System.out.println(exchangeOrder+" 4 ");
 
-                    exchangeOrder = new ExchangeOrder(order.getOrderId(),
-                            order.getProduct(),
-                            leftQuantity,
-                            order.getPrice(),
-                            order.getSide(),
-                            order.getStatus(),
-                            "2");
+
+                    //Left
+                    exchangeOrder = createExchangeObject(order.getOrderId(),order.getProduct(),leftQuantity,
+                            order.getPrice(),order.getSide(),order.getStatus(),"2");
 
                     pushToQueue(changeObjectToString(exchangeOrder));
+                    System.out.println(exchangeOrder+" 5 ");
 
                 }
 
@@ -167,35 +149,28 @@ public class Spliting {
 
                     //Buy all from here
 
-                    exchangeOrder = new ExchangeOrder(order.getOrderId(),
-                            order.getProduct(),
-                            order.getQuantity(),
-                            order.getPrice(),
-                            order.getSide(),
-                            order.getStatus(),
-                            "2");
+                    exchangeOrder = createExchangeObject(order.getOrderId(),order.getProduct(),order.getQuantity(),
+                            order.getPrice(),order.getSide(),order.getStatus(),"2");
+
                     pushToQueue(changeObjectToString(exchangeOrder));
+                    System.out.println(exchangeOrder+" 6 ");
 
                 }
                 else{
 
-                   exchangeOrder = new ExchangeOrder(order.getOrderId(),
-                            order.getProduct(),
-                            buyQuantity,
-                            order.getPrice(),
-                            order.getSide(),
-                            order.getStatus(),
-                            "1");
+                   //How much you can get
+                    exchangeOrder = createExchangeObject(order.getOrderId(),order.getProduct(),buyQuantity,
+                            order.getPrice(),order.getSide(),order.getStatus(),"2");
                     pushToQueue(changeObjectToString(exchangeOrder));
+                    System.out.println(exchangeOrder+" 7 ");
 
-                    exchangeOrder = new ExchangeOrder(order.getOrderId(),
-                            order.getProduct(),
-                            leftQuantity,
-                            order.getPrice(),
-                            order.getSide(),
-                            order.getStatus(),
-                            "1");
+
+                    //Left
+                    exchangeOrder = createExchangeObject(order.getOrderId(),order.getProduct(),leftQuantity,
+                            order.getPrice(),order.getSide(),order.getStatus(),"1");
+
                     pushToQueue(changeObjectToString(exchangeOrder));
+                    System.out.println(exchangeOrder+" 8 ");
                 }
             }
 
@@ -209,36 +184,26 @@ public class Spliting {
 
                 if (leftQuantity < 0){
 
-                    //Buy all from here
+                    //All from here
+                    exchangeOrder = createExchangeObject(order.getOrderId(),order.getProduct(),order.getQuantity(),
+                            order.getPrice(),order.getSide(),order.getStatus(),"1");
 
-                    exchangeOrder = new ExchangeOrder(order.getOrderId(),
-                            order.getProduct(),
-                            order.getQuantity(),
-                            order.getPrice(),
-                            order.getSide(),
-                            order.getStatus(),
-                            "1");
                     pushToQueue(changeObjectToString(exchangeOrder));
+                    System.out.println(exchangeOrder+" 9 ");
                 }
                 else{
 
-                    exchangeOrder = new ExchangeOrder(order.getOrderId(),
-                            order.getProduct(),
-                            buyQuantity,
-                            order.getPrice(),
-                            order.getSide(),
-                            order.getStatus(),
-                            "1");
+                    //How much you can buy
+                    exchangeOrder = createExchangeObject(order.getOrderId(),order.getProduct(),buyQuantity,
+                            order.getPrice(),order.getSide(),order.getStatus(),"1");
                     pushToQueue(changeObjectToString(exchangeOrder));
+                    System.out.println(exchangeOrder+" 10 ");
 
-                    exchangeOrder= new ExchangeOrder(order.getOrderId(),
-                            order.getProduct(),
-                            leftQuantity,
-                            order.getPrice(),
-                            order.getSide(),
-                            order.getStatus(),
-                            "2");
+                    //Left
+                    exchangeOrder = createExchangeObject(order.getOrderId(),order.getProduct(),leftQuantity,
+                            order.getPrice(),order.getSide(),order.getStatus(),"2");
                     pushToQueue(changeObjectToString(exchangeOrder));
+                    System.out.println(exchangeOrder+" 11 ");
                 }
 
                 //Buy the rest from the second
