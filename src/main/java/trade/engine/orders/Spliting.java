@@ -222,30 +222,14 @@ public class Spliting {
 
 
 
-//    public static void main(String[] args) throws JsonProcessingException {
-//
-////        Order order = new Order(1L, orderId, "IBM",10,10,"buy","pending", portfolioId, clientId, validationStatus, createAt);
-//
-//        Order order = new Order(1L,"IBM",20,10,"buy","pending",1L,2L,"done", LocalDate.now());
-//
-//        Spliting spliting = new Spliting(order);
-//
-//        spliting.sendToExchange();
-//
-////        System.out.println(order);
-////        System.out.println(spliting);
-//
-////        String url = "https://exchange.matraining.com/orderbook/IBM/buy";
-////
-////        RestTemplate restTemplate = new RestTemplate();
-////
-////        ResponseEntity<List<MallonOrder>> responseEntity =
-////                restTemplate.exchange(url,
-////                        HttpMethod.GET, null, new ParameterizedTypeReference<List<MallonOrder>>() {
-////                        });
-////        List<MallonOrder> mallonOrder = responseEntity.getBody();
-////        System.out.println(mallonOrder);
-//    }
+    public static void main(String[] args) throws JsonProcessingException {
+//        Jedis jedis = new Jedis("redis-17587.c92.us-east-1-3.ec2.cloud.redislabs.com", 17587);
+//        jedis.auth("rLAKmB4fpXsRZEv9eJBkbddhTYc1RWtK");
+
+        Jedis jedis = new Jedis();
+        Object object = jedis.publish("report-message", "order made successfully");
+        System.out.println(object);
+    }
 
 
 }
