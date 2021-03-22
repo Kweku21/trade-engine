@@ -27,12 +27,13 @@ public class OrderController {
     }
 
     @GetMapping("/try")
-    public Object trySomething(){
+    public String trySomething(){
+
         Jedis jedis = new Jedis();
         Object object = jedis.publish("report-message", "order made successfully");
         System.out.println(object);
 
-        return object;
+        return object.toString();
     }
 
 
