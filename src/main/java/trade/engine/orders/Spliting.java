@@ -64,12 +64,45 @@ public class Spliting {
     public void sendToExchange() throws JsonProcessingException {
 
         String orderString;
+        ExchangeOrder exchangeOrder;
         int buyQuantity,orderQuantity,leftQuantity;
 
         Optional<MallonOrder> firstmallonOrder = getFirstPrice(order);
         Optional<MallonOrder> secondmallonOrder = getSecondPrice(order);
 
-        if (firstmallonOrder.isPresent() && secondmallonOrder .isPresent()){
+//        System.out.println(secondmallonOrder.isPresent());
+
+        if (firstmallonOrder.isPresent() && secondmallonOrder.isEmpty()){
+           exchangeOrder = new ExchangeOrder(order.getOrderId(),
+                    order.getProduct(),
+                    firstmallonOrder.get().getQuantity(),
+                    order.getPrice(),
+                    order.getSide(),
+                    order.getStatus(),
+                    "1");
+
+//           exchangeOrder = createExchangeObject(order.getOrderId(),order.getProduct(),3)
+
+            pushToQueue(changeObjectToString(exchangeOrder));
+            System.out.println(exchangeOrder +" 1 ");
+        }
+
+        else if (firstmallonOrder.isEmpty() && secondmallonOrder.isPresent()){
+            exchangeOrder = new ExchangeOrder(order.getOrderId(),
+                    order.getProduct(),
+                    secondmallonOrder.get().getQuantity(),
+                    order.getPrice(),
+                    order.getSide(),
+                    order.getStatus(),
+                    "2");
+            pushToQueue(changeObjectToString(exchangeOrder));
+            System.out.println(exchangeOrder+" 2 ");
+        }
+
+
+        else if (firstmallonOrder.isPresent() && secondmallonOrder.isPresent()){
+
+            System.out.println("here also");
 
             if (firstmallonOrder.get().getPrice() > secondmallonOrder.get().getPrice()){
 
@@ -83,43 +116,44 @@ public class Spliting {
 
                     //Buy all from here
 
-                    ExchangeOrder exchangeOrder = new ExchangeOrder(order.getOrderId(),
-                                                                    order.getProduct(),
-                                                                    order.getQuantity(),
-                                                                    order.getPrice(),
-                                                                    order.getSide(),
-                                                                    order.getStatus(),
-                                                                    "1");
-                    orderString = mapper.writeValueAsString(exchangeOrder);
-
-                    jedis.rpush("incoming-orders", orderString);
+                   exchangeOrder = new ExchangeOrder(order.getOrderId(),
+                                                    order.getProduct(),
+                                                    order.getQuantity(),
+                                                    order.getPrice(),
+                                                    order.getSide(),
+                                                    order.getStatus(),
+                                                    "1");
+                    pushToQueue(changeObjectToString(exchangeOrder));
+                    System.out.println(exchangeOrder+" 3 ");
                     
-                }else{
+                }
+                else{
 
-                    ExchangeOrder exchangeOrder = new ExchangeOrder(order.getOrderId(),
-                            order.getProduct(),
-                            buyQuantity,
-                            order.getPrice(),
-                            order.getSide(),
-                            order.getStatus(),
-                            "1");
-                    orderString = mapper.writeValueAsString(exchangeOrder);
-                    jedis.rpush("incoming-orders", orderString);
+                    exchangeOrder = new ExchangeOrder(order.getOrderId(),
+                                                    order.getProduct(),
+                                                    buyQuantity,
+                                                    order.getPrice(),
+                                                    order.getSide(),
+                                                    order.getStatus(),
+                                                    "1");
+                    pushToQueue(changeObjectToString(exchangeOrder));
 
-                    ExchangeOrder exchangeOrder2 = new ExchangeOrder(order.getOrderId(),
+                    exchangeOrder = new ExchangeOrder(order.getOrderId(),
                             order.getProduct(),
                             leftQuantity,
                             order.getPrice(),
                             order.getSide(),
                             order.getStatus(),
                             "2");
-                    String orderString2 = mapper.writeValueAsString(exchangeOrder);
-                    jedis.rpush("incoming-orders", orderString);
+
+                    pushToQueue(changeObjectToString(exchangeOrder));
 
                 }
 
                 //Buy the rest from other
-            }else if (firstmallonOrder.get().getPrice() < secondmallonOrder.get().getPrice()){
+            }
+
+            else if (firstmallonOrder.get().getPrice() < secondmallonOrder.get().getPrice()){
 
                 //check how many to and buy from second
 
@@ -133,41 +167,39 @@ public class Spliting {
 
                     //Buy all from here
 
-                    ExchangeOrder exchangeOrder = new ExchangeOrder(order.getOrderId(),
+                    exchangeOrder = new ExchangeOrder(order.getOrderId(),
                             order.getProduct(),
                             order.getQuantity(),
                             order.getPrice(),
                             order.getSide(),
                             order.getStatus(),
                             "2");
-                    orderString = mapper.writeValueAsString(exchangeOrder);
+                    pushToQueue(changeObjectToString(exchangeOrder));
 
-                    jedis.rpush("incoming-orders", orderString);
+                }
+                else{
 
-                }else{
-
-                    ExchangeOrder exchangeOrder = new ExchangeOrder(order.getOrderId(),
+                   exchangeOrder = new ExchangeOrder(order.getOrderId(),
                             order.getProduct(),
                             buyQuantity,
                             order.getPrice(),
                             order.getSide(),
                             order.getStatus(),
                             "1");
-                    orderString = mapper.writeValueAsString(exchangeOrder);
-                    jedis.rpush("incoming-orders", orderString);
+                    pushToQueue(changeObjectToString(exchangeOrder));
 
-                    ExchangeOrder exchangeOrder2 = new ExchangeOrder(order.getOrderId(),
+                    exchangeOrder = new ExchangeOrder(order.getOrderId(),
                             order.getProduct(),
                             leftQuantity,
                             order.getPrice(),
                             order.getSide(),
                             order.getStatus(),
                             "1");
-                    String orderString2 = mapper.writeValueAsString(exchangeOrder);
-                    jedis.rpush("incoming-orders", orderString);
-
+                    pushToQueue(changeObjectToString(exchangeOrder));
                 }
-            }else{
+            }
+
+            else{
 
                 //Check how many to get from first and if all can be bought buy from there
                 buyQuantity = firstmallonOrder.get().getQuantity();
@@ -179,56 +211,88 @@ public class Spliting {
 
                     //Buy all from here
 
-                    ExchangeOrder exchangeOrder = new ExchangeOrder(order.getOrderId(),
+                    exchangeOrder = new ExchangeOrder(order.getOrderId(),
                             order.getProduct(),
                             order.getQuantity(),
                             order.getPrice(),
                             order.getSide(),
                             order.getStatus(),
                             "1");
-                    orderString = mapper.writeValueAsString(exchangeOrder);
+                    pushToQueue(changeObjectToString(exchangeOrder));
+                }
+                else{
 
-                    jedis.rpush("incoming-orders", orderString);
-
-                }else{
-
-                    ExchangeOrder exchangeOrder = new ExchangeOrder(order.getOrderId(),
+                    exchangeOrder = new ExchangeOrder(order.getOrderId(),
                             order.getProduct(),
                             buyQuantity,
                             order.getPrice(),
                             order.getSide(),
                             order.getStatus(),
                             "1");
-                    orderString = mapper.writeValueAsString(exchangeOrder);
-                    jedis.rpush("incoming-orders", orderString);
+                    pushToQueue(changeObjectToString(exchangeOrder));
 
-                    ExchangeOrder exchangeOrder2 = new ExchangeOrder(order.getOrderId(),
+                    exchangeOrder= new ExchangeOrder(order.getOrderId(),
                             order.getProduct(),
                             leftQuantity,
                             order.getPrice(),
                             order.getSide(),
                             order.getStatus(),
                             "2");
-                    String orderString2 = mapper.writeValueAsString(exchangeOrder);
-                    jedis.rpush("incoming-orders", orderString);
-
+                    pushToQueue(changeObjectToString(exchangeOrder));
                 }
 
                 //Buy the rest from the second
             }
+
+        }else {
+            System.out.println("No place to buy orders");
         }
 
+    }
+
+    public ExchangeOrder createExchangeObject(Long orderId,String product,int quantity,
+                                      double price,String side, String status,String exchange){
+
+        return new ExchangeOrder(orderId,product,quantity,price,side,status,exchange);
+    }
+
+    public String changeObjectToString(ExchangeOrder exchangeOrder) throws JsonProcessingException {
+
+        return mapper.writeValueAsString(exchangeOrder);
+
+    }
+
+    public void pushToQueue(String order){
+
+        jedis.rpush("incoming-orders", order);
     }
 
 
 
     public static void main(String[] args) throws JsonProcessingException {
-//        Jedis jedis = new Jedis("redis-17587.c92.us-east-1-3.ec2.cloud.redislabs.com", 17587);
-//        jedis.auth("rLAKmB4fpXsRZEv9eJBkbddhTYc1RWtK");
+//
+//        Order order = new Order(1L, orderId, "IBM",10,10,"buy","pending", portfolioId, clientId, validationStatus, createAt);
 
-        Jedis jedis = new Jedis();
-        Object object = jedis.publish("report-message", "order made successfully");
-        System.out.println(object);
+        Order order = new Order(1L,"IBM",1,10,
+                        "buy","pending",1L,2L,"done", LocalDate.now());
+
+        Spliting spliting = new Spliting(order);
+
+        spliting.sendToExchange();
+//
+////        System.out.println(order);
+////        System.out.println(spliting);
+//
+////        String url = "https://exchange.matraining.com/orderbook/IBM/buy";
+////
+////        RestTemplate restTemplate = new RestTemplate();
+////
+////        ResponseEntity<List<MallonOrder>> responseEntity =
+////                restTemplate.exchange(url,
+////                        HttpMethod.GET, null, new ParameterizedTypeReference<List<MallonOrder>>() {
+////                        });
+////        List<MallonOrder> mallonOrder = responseEntity.getBody();
+////        System.out.println(mallonOrder);
     }
 
 
