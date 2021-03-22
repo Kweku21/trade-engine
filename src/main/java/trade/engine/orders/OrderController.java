@@ -31,9 +31,9 @@ public class OrderController {
 
         Jedis jedis = new Jedis();
         Object object = jedis.publish("report-message", "order made successfully");
-        System.out.println(object);
+//        System.out.println(object);
 
-        return object.toString();
+        return "hello";
     }
 
 
