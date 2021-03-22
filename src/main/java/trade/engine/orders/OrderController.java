@@ -29,7 +29,9 @@ public class OrderController {
     @GetMapping("/try")
     public String trySomething(){
 
-        Jedis jedis = new Jedis();
+//        Jedis jedis = new Jedis();
+        Jedis jedis = new Jedis("redis-17587.c92.us-east-1-3.ec2.cloud.redislabs.com", 17587);
+        jedis.auth("rLAKmB4fpXsRZEv9eJBkbddhTYc1RWtK");
         Object object = jedis.publish("report-message", "order made successfully");
 //        System.out.println(object);
 
