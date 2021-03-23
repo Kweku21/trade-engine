@@ -50,10 +50,9 @@ public class Spliting {
                     restTemplate.exchange(url,
                             HttpMethod.GET, null, new ParameterizedTypeReference<List<MallonOrder>>() {
                             });
-            Optional<MallonOrder> mallonOrder = Optional.ofNullable((MallonOrder) responseEntity.getBody().get(0));
 
-            return mallonOrder;
-        }catch (Exception e){
+            return Optional.ofNullable((MallonOrder) Objects.requireNonNull(responseEntity.getBody()).get(0));
+        }catch (Exception ignored){
 
         }
 
