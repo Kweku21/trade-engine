@@ -18,14 +18,14 @@ public class Spliting {
     private RestTemplate restTemplate = new RestTemplate();
     private HttpHeaders headers = new HttpHeaders();
     private ObjectMapper mapper = new ObjectMapper();
-    Jedis jedis = new Jedis("redis-17587.c92.us-east-1-3.ec2.cloud.redislabs.com", 17587);
+    private final Jedis jedis;
 
-
-    public Spliting(Order order) {
+    public Spliting(Order order,Jedis jedis) {
+        this.jedis = jedis;
         this.order = order;
         headers.setContentType(MediaType.APPLICATION_JSON);
-        jedis.auth("rLAKmB4fpXsRZEv9eJBkbddhTYc1RWtK");
     }
+
 
     public Optional<MallonOrder> getFirstPrice(Order order) {
 
@@ -50,10 +50,9 @@ public class Spliting {
                     restTemplate.exchange(url,
                             HttpMethod.GET, null, new ParameterizedTypeReference<List<MallonOrder>>() {
                             });
-            Optional<MallonOrder> mallonOrder = Optional.ofNullable((MallonOrder) responseEntity.getBody().get(0));
 
-            return mallonOrder;
-        }catch (Exception e){
+            return Optional.ofNullable((MallonOrder) Objects.requireNonNull(responseEntity.getBody()).get(0));
+        }catch (Exception ignored){
 
         }
 
@@ -230,35 +229,24 @@ public class Spliting {
     public void pushToQueue(String order){
 
         jedis.rpush("incoming-orders", order);
+        jedis.publish("report-message",order+" has been sent to the Exchange service");
     }
 
 
 
-    public static void main(String[] args) throws JsonProcessingException {
+//    public static void main(String[] args) throws JsonProcessingException {
 //
-//        Order order = new Order(1L, orderId, "IBM",10,10,"buy","pending", portfolioId, clientId, validationStatus, createAt);
-
-        Order order = new Order(1L,"IBM",1,10,
-                        "buy","pending",1L,2L,"done", LocalDate.now());
-
-        Spliting spliting = new Spliting(order);
-
-        spliting.sendToExchange();
+//        Order order = new Order(1L,"IBM",1,10,
+//                        "buy","pending",1L,2L,"done", LocalDate.now());
 //
-////        System.out.println(order);
-////        System.out.println(spliting);
+//        Jedis jedis = new Jedis("redis-17587.c92.us-east-1-3.ec2.cloud.redislabs.com", 17587);
+//        jedis.auth("rLAKmB4fpXsRZEv9eJBkbddhTYc1RWtK");
 //
-////        String url = "https://exchange.matraining.com/orderbook/IBM/buy";
-////
-////        RestTemplate restTemplate = new RestTemplate();
-////
-////        ResponseEntity<List<MallonOrder>> responseEntity =
-////                restTemplate.exchange(url,
-////                        HttpMethod.GET, null, new ParameterizedTypeReference<List<MallonOrder>>() {
-////                        });
-////        List<MallonOrder> mallonOrder = responseEntity.getBody();
-////        System.out.println(mallonOrder);
-    }
+//        Spliting spliting = new Spliting(order,jedis);
+//
+//        spliting.sendToExchange();
+//
+//    }
 
 
 }

@@ -1,6 +1,7 @@
 package trade.engine.orders;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -10,33 +11,26 @@ import redis.clients.jedis.Jedis;
 @RequestMapping("/trade")
 public class OrderController {
 
-    private final OrderService orderService;
+    @Autowired
+    private OrderService orderService;
+    Jedis jedis = new Jedis("redis-17587.c92.us-east-1-3.ec2.cloud.redislabs.com", 17587);
 
     public OrderController(OrderService orderService) {
+        jedis.auth("rLAKmB4fpXsRZEv9eJBkbddhTYc1RWtK");
         this.orderService = orderService;
     }
 
     @PostMapping("/order")
     public ResponseEntity<String> makeTrade(@RequestBody Order order) throws JsonProcessingException {
 
-        Spliting orderSpliting = new Spliting(order);
+        jedis.publish("report-message",order.toString()+" has been received into the trade -engine service");
+        Spliting orderSpliting = new Spliting(order,jedis);
 
         orderSpliting.sendToExchange();
 
         return new ResponseEntity<>("Order is been processed ", HttpStatus.OK);
     }
 
-    @GetMapping("/try")
-    public String trySomething(){
-
-//        Jedis jedis = new Jedis();
-        Jedis jedis = new Jedis("redis-17587.c92.us-east-1-3.ec2.cloud.redislabs.com", 17587);
-        jedis.auth("rLAKmB4fpXsRZEv9eJBkbddhTYc1RWtK");
-        Object object = jedis.publish("report-message", "order made successfully");
-        System.out.println(object);
-
-        return object.toString();
-    }
 
 
 
