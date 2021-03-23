@@ -19,6 +19,7 @@ public class Spliting {
     private ObjectMapper mapper = new ObjectMapper();
     private final Jedis jedis;
     private final String side;
+    Map<String, Object> mallonData = new HashMap<>();
 
     public Spliting(Order order, Jedis jedis, String side) {
         this.jedis = jedis;
@@ -28,36 +29,55 @@ public class Spliting {
     }
 
 
-    public Optional<MallonOrder> getFirstPrice(Order order) {
+    public Map<String, Object> getFirstPrice() {
 
-        return getMallonOrder(order,"1");
+        return  getMallonOrder("1");
     }
 
-    public Optional<MallonOrder> getSecondPrice(Order order) {
+    public Map<String, Object> getSecondPrice() {
 
-        return getMallonOrder(order,"2");
+        return getMallonOrder("2");
     }
 
-    private Optional<MallonOrder> getMallonOrder(Order order,String exchange) {
+    private Map<String, Object> getMallonOrder(String exchange) {
         String url;
         if (exchange.equals("1")){
-           url = "https://exchange.matraining.com/orderbook/"+order.getProduct()+"/"+this.side;
+           url = "https://exchange.matraining.com/md/"+order.getProduct();
         }else{
-            url = "https://exchange1.matraining.com/orderbook/"+order.getProduct()+"/"+this.side;
+            url = "https://exchange1.matraining.com/md/"+order.getProduct();
         }
 
+        System.out.println(url);
+
         try {
-            ResponseEntity<List<MallonOrder>> responseEntity =
+//            ResponseEntity<MallonOrder> responseEntity =
+//                    restTemplate.exchange(url,
+//                            HttpMethod.GET, null, new ParameterizedTypeReference<MallonOrder>() {
+//                            });
+
+//            MallonOrder mallonOrder = restTemplate.getForObject(url,MallonOrder.class);
+//            System.out.println(mallonOrder);
+
+//            ;
+
+            ResponseEntity<Map<String, Object>> responseEntity =
                     restTemplate.exchange(url,
-                            HttpMethod.GET, null, new ParameterizedTypeReference<List<MallonOrder>>() {
+                            HttpMethod.GET, null, new ParameterizedTypeReference<Map<String,Object>>() {
                             });
 
-            return Optional.ofNullable((MallonOrder) Objects.requireNonNull(responseEntity.getBody()).get(0));
+            mallonData = responseEntity.getBody();
+
+//            Optional<MallonOrder> mallon =Optional.of((MallonOrder) Objects.requireNonNull(responseEntity.getBody()));
+//             System.out.println(responseEntity.getBody());
+
+
+            return mallonData;
         }catch (Exception ignored){
 
         }
 
-        return Optional.empty();
+        return null;
+
     }
 
 
@@ -65,161 +85,172 @@ public class Spliting {
 
         String orderString;
         ExchangeOrder exchangeOrder;
-        int buyQuantity,orderQuantity,leftQuantity;
+        int buyQuantity,orderQuantity,leftQuantity,quantityDiff;
 
-        Optional<MallonOrder> firstmallonOrder = getFirstPrice(order);
-        Optional<MallonOrder> secondmallonOrder = getSecondPrice(order);
+        Map<String, Object> firstMallonOrder = getFirstPrice();
+        Map<String, Object> secondMallonOrder = getSecondPrice();
+//
+        System.out.println(firstMallonOrder);
+        System.out.println(secondMallonOrder);
 
-//        System.out.println(secondmallonOrder.isPresent());
+        //If first section is available and second is not
+        if ( firstMallonOrder != null && secondMallonOrder == null){
 
-        if (firstmallonOrder.isPresent() && secondmallonOrder.isEmpty()){
+            quantityDiff = order.getQuantity() - (Integer) firstMallonOrder.get("BUY_LIMIT");
 
-            exchangeOrder = createExchangeObject(order.getOrderId(),order.getProduct(),firstmallonOrder.get().getQuantity(),
-                            order.getPrice(),order.getSide(),order.getStatus(),"1");
-
-           pushToQueue(changeObjectToString(exchangeOrder));
-           System.out.println(exchangeOrder +" 1 ");
-        }
-
-        else if (firstmallonOrder.isEmpty() && secondmallonOrder.isPresent()){
-
-            exchangeOrder = createExchangeObject(order.getOrderId(),order.getProduct(),secondmallonOrder.get().getQuantity(),
-                    order.getPrice(),order.getSide(),order.getStatus(),"2");
-
-            pushToQueue(changeObjectToString(exchangeOrder));
-            System.out.println(exchangeOrder+" 2 ");
-        }
-
-
-        else if (firstmallonOrder.isPresent() && secondmallonOrder.isPresent()){
-
-            System.out.println("here also");
-
-            if (firstmallonOrder.get().getPrice() > secondmallonOrder.get().getPrice()){
-
-                //Check how many quantity and buy from first
-                buyQuantity = firstmallonOrder.get().getQuantity();
-                orderQuantity = order.getQuantity();
-
-                leftQuantity = orderQuantity - buyQuantity;
-
-                if (leftQuantity < 0){
-
-                    //Buy all from here
-
-                    exchangeOrder = createExchangeObject(order.getOrderId(),order.getProduct(),order.getQuantity(),
-                            order.getPrice(),order.getSide(),order.getStatus(),"1");
-
-                    pushToQueue(changeObjectToString(exchangeOrder));
-                    System.out.println(exchangeOrder+" 3 ");
-                    
-                }
-                else{
-
-                    //How much you can get
-                    exchangeOrder = createExchangeObject(order.getOrderId(),order.getProduct(),buyQuantity,
-                            order.getPrice(),order.getSide(),order.getStatus(),"1");
-                    pushToQueue(changeObjectToString(exchangeOrder));
-                    System.out.println(exchangeOrder+" 4 ");
-
-
-                    //Left
-                    exchangeOrder = createExchangeObject(order.getOrderId(),order.getProduct(),leftQuantity,
-                            order.getPrice(),order.getSide(),order.getStatus(),"2");
-
-                    pushToQueue(changeObjectToString(exchangeOrder));
-                    System.out.println(exchangeOrder+" 5 ");
-
-                }
-
-                //Buy the rest from other
+            if (quantityDiff < 0){
+                createExchangeObject(order.getOrderId(), order.getProduct(),
+                        order.getQuantity(), order.getPrice(),order.getSide(),order.getStatus(),"1");
+            }else {
+                createExchangeObject(order.getOrderId(), order.getProduct(),
+                        (Integer) firstMallonOrder.get("BUY_LIMIT"), order.getPrice(),order.getSide(),
+                        order.getStatus(),"1");
             }
 
-            else if (firstmallonOrder.get().getPrice() < secondmallonOrder.get().getPrice()){
-
-                //check how many to and buy from second
-
-                //Buy the rest from other
-                buyQuantity = secondmallonOrder.get().getQuantity();
-                orderQuantity = order.getQuantity();
-
-                leftQuantity = orderQuantity - buyQuantity;
-
-                if (leftQuantity < 0){
-
-                    //Buy all from here
-
-                    exchangeOrder = createExchangeObject(order.getOrderId(),order.getProduct(),order.getQuantity(),
-                            order.getPrice(),order.getSide(),order.getStatus(),"2");
-
-                    pushToQueue(changeObjectToString(exchangeOrder));
-                    System.out.println(exchangeOrder+" 6 ");
-
-                }
-                else{
-
-                   //How much you can get
-                    exchangeOrder = createExchangeObject(order.getOrderId(),order.getProduct(),buyQuantity,
-                            order.getPrice(),order.getSide(),order.getStatus(),"2");
-                    pushToQueue(changeObjectToString(exchangeOrder));
-                    System.out.println(exchangeOrder+" 7 ");
-
-
-                    //Left
-                    exchangeOrder = createExchangeObject(order.getOrderId(),order.getProduct(),leftQuantity,
-                            order.getPrice(),order.getSide(),order.getStatus(),"1");
-
-                    pushToQueue(changeObjectToString(exchangeOrder));
-                    System.out.println(exchangeOrder+" 8 ");
-                }
-            }
-
-            else{
-
-                //Check how many to get from first and if all can be bought buy from there
-                buyQuantity = firstmallonOrder.get().getQuantity();
-                orderQuantity = order.getQuantity();
-
-                leftQuantity = orderQuantity - buyQuantity;
-
-                if (leftQuantity < 0){
-
-                    //All from here
-                    exchangeOrder = createExchangeObject(order.getOrderId(),order.getProduct(),order.getQuantity(),
-                            order.getPrice(),order.getSide(),order.getStatus(),"1");
-
-                    pushToQueue(changeObjectToString(exchangeOrder));
-                    System.out.println(exchangeOrder+" 9 ");
-                }
-                else{
-
-                    //How much you can buy
-                    exchangeOrder = createExchangeObject(order.getOrderId(),order.getProduct(),buyQuantity,
-                            order.getPrice(),order.getSide(),order.getStatus(),"1");
-                    pushToQueue(changeObjectToString(exchangeOrder));
-                    System.out.println(exchangeOrder+" 10 ");
-
-                    //Left
-                    exchangeOrder = createExchangeObject(order.getOrderId(),order.getProduct(),leftQuantity,
-                            order.getPrice(),order.getSide(),order.getStatus(),"2");
-                    pushToQueue(changeObjectToString(exchangeOrder));
-                    System.out.println(exchangeOrder+" 11 ");
-                }
-
-                //Buy the rest from the second
-            }
-
+           System.out.println(" 1 ");
         }
+
+        //If second section is available and first is not
+        else if ( firstMallonOrder != null && secondMallonOrder == null){
+
+            quantityDiff = order.getQuantity() - (Integer) firstMallonOrder.get("BUY_LIMIT");
+
+            if (quantityDiff < 0){
+                createExchangeObject(order.getOrderId(), order.getProduct(),
+                        order.getQuantity(), order.getPrice(),order.getSide(),order.getStatus(),"1");
+            }else {
+                createExchangeObject(order.getOrderId(), order.getProduct(),
+                        (Integer) firstMallonOrder.get("BUY_LIMIT"), order.getPrice(),order.getSide(),
+                        order.getStatus(),"1");
+            }
+
+           System.out.println(" 2 ");
+        }
+//
+//
         else {
-            System.out.println("No place to trade order");
+
+            if (!firstMallonOrder.isEmpty() && !secondMallonOrder.isEmpty()){
+
+                if ((Integer)firstMallonOrder.get("BID_PRICE") > (Integer)secondMallonOrder.get("BID_PRICE")){
+
+                    //Check how many quantity and buy from first
+                    buyQuantity = (int) firstMallonOrder.get("BUY_LIMIT");
+                    orderQuantity = order.getQuantity();
+
+                    leftQuantity = orderQuantity - buyQuantity;
+
+                    if (leftQuantity < 0){
+
+                        //Buy all from here
+
+                        createExchangeObject(order.getOrderId(),order.getProduct(),order.getQuantity(),
+                                order.getPrice(),order.getSide(),order.getStatus(),"1");
+
+                        System.out.println(" 3 ");
+
+                    }
+                    else{
+
+                        //How much you can get
+                        createExchangeObject(order.getOrderId(),order.getProduct(),buyQuantity,
+                                order.getPrice(),order.getSide(),order.getStatus(),"1");
+
+                        System.out.println(" 4 ");
+
+
+                        //Left
+                        createExchangeObject(order.getOrderId(),order.getProduct(),leftQuantity,
+                                order.getPrice(),order.getSide(),order.getStatus(),"2");
+
+                        System.out.println(" 5 ");
+
+                    }
+
+                    //Buy the rest from other
+                }
+
+                else if ((int)firstMallonOrder.get("BID_PRICE") < (int)secondMallonOrder.get("BID_PRICE")){
+
+                    //check how many to and buy from second
+
+                    //Buy the rest from other
+                    buyQuantity = (int) secondMallonOrder.get("BID_PRICE");
+                    orderQuantity = order.getQuantity();
+
+                    leftQuantity = orderQuantity - buyQuantity;
+
+                    if (leftQuantity < 0){
+
+                        //Buy all from here
+
+                        createExchangeObject(order.getOrderId(),order.getProduct(),order.getQuantity(),
+                                order.getPrice(),order.getSide(),order.getStatus(),"2");
+
+                        System.out.println(" 6 ");
+
+                    }
+                    else{
+
+                       //How much you can get
+                        createExchangeObject(order.getOrderId(),order.getProduct(),buyQuantity,
+                                order.getPrice(),order.getSide(),order.getStatus(),"2");
+                        System.out.println(" 7 ");
+
+
+                        //Left
+                        createExchangeObject(order.getOrderId(),order.getProduct(),leftQuantity,
+                                order.getPrice(),order.getSide(),order.getStatus(),"1");
+
+                        System.out.println(" 8 ");
+                    }
+                }
+
+                else{
+
+                    //Check how many to get from first and if all can be bought buy from there
+                    buyQuantity = (int) firstMallonOrder.get("BID_PRICE");
+                    orderQuantity = order.getQuantity();
+
+                    leftQuantity = orderQuantity - buyQuantity;
+
+                    if (leftQuantity < 0){
+
+                        //All from here
+                        createExchangeObject(order.getOrderId(),order.getProduct(),order.getQuantity(),
+                                order.getPrice(),order.getSide(),order.getStatus(),"1");
+
+                        System.out.println(" 9 ");
+                    }
+                    else{
+
+                        //How much you can buy
+                        createExchangeObject(order.getOrderId(),order.getProduct(),buyQuantity,
+                                order.getPrice(),order.getSide(),order.getStatus(),"1");
+                        System.out.println(" 10 ");
+
+                        //Left
+                        createExchangeObject(order.getOrderId(),order.getProduct(),leftQuantity,
+                                order.getPrice(),order.getSide(),order.getStatus(),"2");
+                        System.out.println(" 11 ");
+                    }
+
+                    //Buy the rest from the second
+                }
+
+            }
+            else {
+                System.out.println("No place to trade order");
+            }
         }
 
     }
 
-    public ExchangeOrder createExchangeObject(Long orderId,String product,int quantity,
-                                      double price,String side, String status,String exchange){
+    public void createExchangeObject(Long orderId,String product,int quantity,
+                                      double price,String side, String status,String exchange) throws JsonProcessingException {
 
-        return new ExchangeOrder(orderId,product,quantity,price,side,status,exchange);
+        ExchangeOrder exchangeOrder= new ExchangeOrder(orderId,product,quantity,price,side,status,exchange);
+        pushToQueue(changeObjectToString(exchangeOrder));
     }
 
     public String changeObjectToString(ExchangeOrder exchangeOrder) throws JsonProcessingException {
@@ -238,16 +269,18 @@ public class Spliting {
 
     public static void main(String[] args) throws JsonProcessingException {
 
-        Order order = new Order(1L,"IBM",1,10,
-                        "BUY","PENDING",1L,2L,"done", LocalDate.now());
+        Order order = new Order(1L,"GOOGL",1,2.5,
+                        "SELL","PENDING",1L,2L,"done", LocalDate.now());
 
         Jedis jedis = new Jedis("redis-17587.c92.us-east-1-3.ec2.cloud.redislabs.com", 17587);
         jedis.auth("rLAKmB4fpXsRZEv9eJBkbddhTYc1RWtK");
 
         Spliting spliting = new Spliting(order,jedis, order.getSide().toLowerCase(Locale.ROOT));
 
-        spliting.sendToExchange();
+//        spliting.getMallonOrder("1");
 
+//        System.out.println(spliting.getSecondPrice());
+        spliting.sendToExchange();
     }
 
 
