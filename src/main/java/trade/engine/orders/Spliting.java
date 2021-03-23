@@ -8,7 +8,6 @@ import org.springframework.web.client.RestTemplate;
 import redis.clients.jedis.Jedis;
 
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.*;
 
 
@@ -19,10 +18,12 @@ public class Spliting {
     private HttpHeaders headers = new HttpHeaders();
     private ObjectMapper mapper = new ObjectMapper();
     private final Jedis jedis;
+    private final String side;
 
-    public Spliting(Order order,Jedis jedis) {
+    public Spliting(Order order, Jedis jedis, String side) {
         this.jedis = jedis;
         this.order = order;
+        this.side = side;
         headers.setContentType(MediaType.APPLICATION_JSON);
     }
 
@@ -40,9 +41,9 @@ public class Spliting {
     private Optional<MallonOrder> getMallonOrder(Order order,String exchange) {
         String url;
         if (exchange.equals("1")){
-           url = "https://exchange.matraining.com/orderbook/"+order.getProduct()+"/buy";
+           url = "https://exchange.matraining.com/orderbook/"+order.getProduct()+"/"+this.side;
         }else{
-            url = "https://exchange1.matraining.com/orderbook/"+order.getProduct()+"/buy";
+            url = "https://exchange1.matraining.com/orderbook/"+order.getProduct()+"/"+this.side;
         }
 
         try {
@@ -208,8 +209,9 @@ public class Spliting {
                 //Buy the rest from the second
             }
 
-        }else {
-            System.out.println("No place to buy orders");
+        }
+        else {
+            System.out.println("No place to trade order");
         }
 
     }
@@ -234,19 +236,19 @@ public class Spliting {
 
 
 
-//    public static void main(String[] args) throws JsonProcessingException {
-//
-//        Order order = new Order(1L,"IBM",1,10,
-//                        "buy","pending",1L,2L,"done", LocalDate.now());
-//
-//        Jedis jedis = new Jedis("redis-17587.c92.us-east-1-3.ec2.cloud.redislabs.com", 17587);
-//        jedis.auth("rLAKmB4fpXsRZEv9eJBkbddhTYc1RWtK");
-//
-//        Spliting spliting = new Spliting(order,jedis);
-//
-//        spliting.sendToExchange();
-//
-//    }
+    public static void main(String[] args) throws JsonProcessingException {
+
+        Order order = new Order(1L,"IBM",1,10,
+                        "BUY","PENDING",1L,2L,"done", LocalDate.now());
+
+        Jedis jedis = new Jedis("redis-17587.c92.us-east-1-3.ec2.cloud.redislabs.com", 17587);
+        jedis.auth("rLAKmB4fpXsRZEv9eJBkbddhTYc1RWtK");
+
+        Spliting spliting = new Spliting(order,jedis, order.getSide().toLowerCase(Locale.ROOT));
+
+        spliting.sendToExchange();
+
+    }
 
 
 }

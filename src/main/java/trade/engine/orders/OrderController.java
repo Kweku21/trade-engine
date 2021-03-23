@@ -7,12 +7,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import redis.clients.jedis.Jedis;
 
+import java.util.Locale;
+
 @RestController
 @RequestMapping("/trade")
 public class OrderController {
 
     @Autowired
-    private OrderService orderService;
+    private final OrderService orderService;
     Jedis jedis = new Jedis("redis-17587.c92.us-east-1-3.ec2.cloud.redislabs.com", 17587);
 
     public OrderController(OrderService orderService) {
@@ -20,17 +22,18 @@ public class OrderController {
         this.orderService = orderService;
     }
 
-    @PostMapping("/order")
+    @PostMapping("/buy")
     public ResponseEntity<String> makeTrade(@RequestBody Order order) throws JsonProcessingException {
 
         jedis.publish("report-message",order.toString()+" has been received into the trade -engine service");
-        Spliting orderSpliting = new Spliting(order,jedis);
+        Spliting orderSpliting = new Spliting(order,jedis, order.getSide().toLowerCase(Locale.ROOT));
 
         orderSpliting.sendToExchange();
 
         return new ResponseEntity<>("Order is been processed ", HttpStatus.OK);
     }
 
+//    @PostMapping("/")
 
 
 
