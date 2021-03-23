@@ -22,7 +22,7 @@ public class OrderController {
         this.orderService = orderService;
     }
 
-    @PostMapping("/buy")
+    @PostMapping("/order")
     public ResponseEntity<String> makeTrade(@RequestBody Order order) throws JsonProcessingException {
 
         jedis.publish("report-message",order.toString()+" has been received into the trade -engine service");
