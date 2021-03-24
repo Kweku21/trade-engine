@@ -4,13 +4,13 @@ public class ExchangeOrder {
 
     private Long orderId;
     private String product;
-    private int quantity;
+    private Long quantity;
     private double price;
     private String side;
     private String status;
     private String exchange;
 
-    public ExchangeOrder(Long orderId, String product, int quantity, double price, String side, String status, String exchange) {
+    public ExchangeOrder(Long orderId, String product, Long quantity, double price, String side, String status, String exchange) {
         this.orderId = orderId;
         this.product = product;
         this.quantity = quantity;
@@ -39,11 +39,11 @@ public class ExchangeOrder {
         this.product = product;
     }
 
-    public int getQuantity() {
+    public Long getQuantity() {
         return quantity;
     }
 
-    public void setQuantity(int quantity) {
+    public void setQuantity(Long quantity) {
         this.quantity = quantity;
     }
 

@@ -25,7 +25,7 @@ public class OrderController {
     @PostMapping("/order")
     public ResponseEntity<String> makeTrade(@RequestBody Order order) throws JsonProcessingException {
 
-        jedis.publish("report-message",order.toString()+" has been received into the trade -engine service");
+        jedis.publish("report-message",order.toString()+" has been received into the trade-engine service");
         Spliting orderSpliting = new Spliting(order,jedis, order.getSide().toLowerCase(Locale.ROOT));
 
         orderSpliting.sendToExchange();

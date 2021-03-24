@@ -7,7 +7,7 @@ public class Order {
 
     private Long orderId;
     private String product;
-    private int quantity;
+    private Long quantity;
     private double price;
     private String side;
     private String status;
@@ -19,7 +19,7 @@ public class Order {
 
     public Order(Long orderId,
                  String product,
-                 int quantity,
+                 Long quantity,
                  double price,
                  String side,
                  String status,
@@ -90,11 +90,11 @@ public class Order {
         this.product = product;
     }
 
-    public int getQuantity() {
+    public Long getQuantity() {
         return quantity;
     }
 
-    public void setQuantity(int quantity) {
+    public void setQuantity(Long quantity) {
         this.quantity = quantity;
     }
 
