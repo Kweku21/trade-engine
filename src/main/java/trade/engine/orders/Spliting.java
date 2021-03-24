@@ -216,7 +216,7 @@ public class Spliting {
                 else{
 
                     //Check how many to get from first and if all can be bought buy from there
-                    buyQuantity = (int) firstMallonOrder.get("BID_PRICE");
+                    buyQuantity = (Double) firstMallonOrder.get("BID_PRICE");
                     orderQuantity = order.getQuantity();
 
                     leftQuantity = orderQuantity - buyQuantity;
