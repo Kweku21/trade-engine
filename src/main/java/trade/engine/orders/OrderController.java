@@ -28,7 +28,7 @@ public class OrderController {
         jedis.publish("report-message",order.toString()+" has been received into the trade-engine service");
         Spliting orderSpliting = new Spliting(order,jedis, order.getSide().toLowerCase(Locale.ROOT));
 
-        orderSpliting.sendToExchange();
+        orderSpliting.sendExchange();
 
         return new ResponseEntity<>("Order is been processed ", HttpStatus.OK);
     }
