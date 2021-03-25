@@ -118,17 +118,16 @@ public class Spliting {
         }
 
         //If second section is available and first is not
-        else if ( firstMallonOrder != null && secondMallonOrder == null){
+        else if ( firstMallonOrder == null && secondMallonOrder != null){
 
-            quantityDiff = order.getQuantity() - (Integer) firstMallonOrder.get(exchangeSide);
+            quantityDiff = order.getQuantity() - (Integer) secondMallonOrder.get(exchangeSide);
 
             if (quantityDiff < 0){
                 createExchangeObject(order.getOrderId(), order.getProduct(),
                         order.getQuantity(), order.getPrice(),order.getSide(),order.getStatus(),"1");
             }else {
-                createExchangeObject(order.getOrderId(), order.getProduct(),
-                        (Long) firstMallonOrder.get(exchangeSide), order.getPrice(),order.getSide(),
-                        order.getStatus(),"1");
+                createExchangeObject(order.getOrderId(), order.getProduct(), (Long) secondMallonOrder.get(exchangeSide),
+                        order.getPrice(),order.getSide(), order.getStatus(),"1");
             }
 
            System.out.println(" 2 ");
@@ -137,7 +136,7 @@ public class Spliting {
 //
         else {
 
-            if (!firstMallonOrder.isEmpty() && !secondMallonOrder.isEmpty()){
+            if (firstMallonOrder != null && secondMallonOrder != null){
 
                 if ((Double)firstMallonOrder.get("BID_PRICE") > (Double)secondMallonOrder.get("BID_PRICE")){
 
@@ -147,10 +146,9 @@ public class Spliting {
 
                     leftQuantity = orderQuantity - buyQuantity;
 
-                    if (leftQuantity < 0){
+                    if (leftQuantity <= 0){
 
-                        //Buy all from here
-
+                        //Buy all from first
                         createExchangeObject(order.getOrderId(),order.getProduct(),order.getQuantity(),
                                 order.getPrice(),order.getSide(),order.getStatus(),"1");
 
@@ -159,14 +157,14 @@ public class Spliting {
                     }
                     else{
 
-                        //How much you can get
+                        //How much you can get from first
                         createExchangeObject(order.getOrderId(),order.getProduct(), Math.round(buyQuantity),
                                 order.getPrice(),order.getSide(),order.getStatus(),"1");
 
                         System.out.println(" 4 ");
 
 
-                        //Left
+                        //buy the rest from the second
                         createExchangeObject(order.getOrderId(),order.getProduct(), Math.round(leftQuantity),
                                 order.getPrice(),order.getSide(),order.getStatus(),"2");
 
@@ -181,16 +179,15 @@ public class Spliting {
 
                     //check how many to and buy from second
 
-                    //Buy the rest from other
+                    //Check the quantity difference
                     buyQuantity = (double) secondMallonOrder.get("BID_PRICE");
                     orderQuantity = order.getQuantity();
 
                     leftQuantity = orderQuantity - buyQuantity;
 
-                    if (leftQuantity < 0){
+                    if (leftQuantity <= 0){
 
-                        //Buy all from here
-
+                        //Buy all from second
                         createExchangeObject(order.getOrderId(),order.getProduct(),order.getQuantity(),
                                 order.getPrice(),order.getSide(),order.getStatus(),"2");
 
@@ -199,13 +196,13 @@ public class Spliting {
                     }
                     else{
 
-                       //How much you can get
+                       //Buy how much you can get from second
                         createExchangeObject(order.getOrderId(),order.getProduct(), Math.round(buyQuantity),
                                 order.getPrice(),order.getSide(),order.getStatus(),"2");
                         System.out.println(" 7 ");
 
 
-                        //Left
+                        //Buy the rest from the first
                         createExchangeObject(order.getOrderId(),order.getProduct(), Math.round(leftQuantity),
                                 order.getPrice(),order.getSide(),order.getStatus(),"1");
 
@@ -221,9 +218,9 @@ public class Spliting {
 
                     leftQuantity = orderQuantity - buyQuantity;
 
-                    if (leftQuantity < 0){
+                    if (leftQuantity <= 0){
 
-                        //All from here
+                        //Buy all from 1st
                         createExchangeObject(order.getOrderId(),order.getProduct(),order.getQuantity(),
                                 order.getPrice(),order.getSide(),order.getStatus(),"1");
 
@@ -231,12 +228,12 @@ public class Spliting {
                     }
                     else{
 
-                        //How much you can buy
+                        //Buy how many you can get from first
                         createExchangeObject(order.getOrderId(),order.getProduct(), Math.round(buyQuantity),
                                 order.getPrice(),order.getSide(),order.getStatus(),"1");
                         System.out.println(" 10 ");
 
-                        //Left
+                        //Buy the rest from second
                         createExchangeObject(order.getOrderId(),order.getProduct(), Math.round(leftQuantity),
                                 order.getPrice(),order.getSide(),order.getStatus(),"2");
                         System.out.println(" 11 ");
@@ -253,10 +250,13 @@ public class Spliting {
 
     }
 
+//    public void
+
     public void createExchangeObject(Long orderId,String product,Long quantity,
                                       double price,String side, String status,String exchange) throws JsonProcessingException {
 
         ExchangeOrder exchangeOrder= new ExchangeOrder(orderId,product,quantity,price,side,status,exchange);
+        System.out.println(exchangeOrder);
         pushToQueue(changeObjectToString(exchangeOrder));
     }
 
@@ -276,7 +276,7 @@ public class Spliting {
 
     public static void main(String[] args) throws JsonProcessingException {
 
-        Order order = new Order(1L,"GOOGL",1L,2.5,
+        Order order = new Order(1L,"GOOGL",3L,2.5,
                         "SELL","PENDING",1L,2L,"done", LocalDate.now());
 
         Jedis jedis = new Jedis("redis-17587.c92.us-east-1-3.ec2.cloud.redislabs.com", 17587);
