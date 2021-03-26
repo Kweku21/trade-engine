@@ -225,7 +225,7 @@ public class Spliting {
                      order.getPrice(),order.getSide(),order.getStatus(),exchangeType);
 
         }else {
-            pushToQueue(order+" has invalid price against the "+exchangeType+" mallon exchange ");
+            publishToReport(order+" has invalid price against the "+exchangeType+" mallon exchange ");
 
         }
 
@@ -258,10 +258,14 @@ public class Spliting {
         jedis.publish("report-message",order+" has been sent to the Exchange service");
     }
 
+    public void publishToReport(String order ){
+        jedis.publish("report-message",order+" has been sent to the Exchange service");
+    }
+
 
     public static void main(String[] args) throws JsonProcessingException {
 
-        Order order = new Order(1L,"GOOGL",100L,1.0,
+        Order order = new Order(1L,"GOOGL",100L,10000.0,
                         "BUY","PENDING",1L,2L,"done", LocalDate.now());
 
         Jedis jedis = new Jedis("redis-17587.c92.us-east-1-3.ec2.cloud.redislabs.com", 17587);
