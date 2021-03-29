@@ -36,6 +36,9 @@ public class Spliting {
         }
         this.side = side;
         headers.setContentType(MediaType.APPLICATION_JSON);
+
+        //Logging to report
+        publishToReport(order+" has been received into trade engine");
     }
 
 
@@ -255,18 +258,20 @@ public class Spliting {
     public void pushToQueue(String order){
 
         jedis.rpush("incoming-orders", order);
-        jedis.publish("report-message",order+" has been sent to the Exchange service");
+        publishToReport(order+" has been sent to the Exchange service");
     }
 
-    public void publishToReport(String order ){
-        jedis.publish("report-message",order+" has been sent to the Exchange service");
+    public void publishToReport(String message ){
+        jedis.publish("report-message",message);
     }
 
 
     public static void main(String[] args) throws JsonProcessingException {
 
-        Order order = new Order(1L,"GOOGL",100L,10000.0,
+        Order order = new Order(1L,"GOOGL",100L,1.5,
                         "BUY","PENDING",1L,2L,"done", LocalDate.now());
+
+
 
         Jedis jedis = new Jedis("redis-17587.c92.us-east-1-3.ec2.cloud.redislabs.com", 17587);
         jedis.auth("rLAKmB4fpXsRZEv9eJBkbddhTYc1RWtK");
