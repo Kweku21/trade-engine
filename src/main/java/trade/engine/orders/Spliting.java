@@ -38,7 +38,7 @@ public class Spliting {
         headers.setContentType(MediaType.APPLICATION_JSON);
 
         //Logging to report
-        publishToReport(order+" has been received into trade engine");
+//        publishToReport(order+" has been received into trade engine");
     }
 
 
@@ -236,9 +236,17 @@ public class Spliting {
 
     public Boolean checkPrice(Double marketValue,Double orderValue,int maxShit){
 
-        if (marketValue == orderValue+maxShit){
+        String value = "0."+maxShit;
+        Double newMaxShift = Double.parseDouble(value);
+
+        if(marketValue <= orderValue && orderValue <= marketValue+newMaxShift){
             return true;
-        }else return marketValue - maxShit == orderValue;
+        }else if(marketValue >= orderValue && orderValue >= marketValue-newMaxShift){
+            return true;
+        }else{
+            return false;
+        }
+
     }
 
     public void createExchangeObject(Long orderId,String product,Long quantity,
