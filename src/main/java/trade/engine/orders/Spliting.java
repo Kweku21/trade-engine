@@ -223,7 +223,6 @@ public class Spliting {
     protected void checkPriceBidBeforeMakingOrder(Map<String, Object> exchange,String exchangeType,Long quantity) throws JsonProcessingException {
 
         if (checkPrice((Double) exchange.get("BID_PRICE"),order.getPrice(), (Integer) exchange.get("MAX_PRICE_SHIFT"))){
-
             createExchangeObject(order.getOrderId(), order.getProduct(),quantity,
                      order.getPrice(),order.getSide(),order.getStatus(),exchangeType);
 
@@ -234,19 +233,8 @@ public class Spliting {
 
     }
 
-    public Boolean checkPrice(Double marketValue,Double orderValue,int maxShit){
-
-        String value = "0."+maxShit;
-        Double newMaxShift = Double.parseDouble(value);
-
-        if(marketValue <= orderValue && orderValue <= marketValue+newMaxShift){
-            return true;
-        }else if(marketValue >= orderValue && orderValue >= marketValue-newMaxShift){
-            return true;
-        }else{
-            return false;
-        }
-
+    public Boolean checkPrice(Double marketValue,Double orderValue,int maxShift){
+        return orderValue <= marketValue+maxShift && orderValue >= marketValue - maxShift;
     }
 
     public void createExchangeObject(Long orderId,String product,Long quantity,
@@ -272,25 +260,5 @@ public class Spliting {
     public void publishToReport(String message ){
         jedis.publish("report-message",message);
     }
-
-
-    public static void main(String[] args) throws JsonProcessingException {
-
-        Order order = new Order(1L,"GOOGL",100L,1.5,
-                        "BUY","PENDING",1L,2L,"done", LocalDate.now());
-
-
-
-        Jedis jedis = new Jedis("redis-17587.c92.us-east-1-3.ec2.cloud.redislabs.com", 17587);
-        jedis.auth("rLAKmB4fpXsRZEv9eJBkbddhTYc1RWtK");
-
-        Spliting spliting = new Spliting(order,jedis, order.getSide().toLowerCase(Locale.ROOT));
-
-//        spliting.getMallonOrder("1");
-
-//        System.out.println(spliting.getSecondPrice());
-        spliting.sendExchange();
-    }
-
 
 }
