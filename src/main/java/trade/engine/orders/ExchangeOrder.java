@@ -82,7 +82,7 @@ public class ExchangeOrder {
     @Override
     public String toString() {
         return "ExchangeOrder{" +
-                "orderId=" + clientOrderId +
+                "clientOrderId=" + clientOrderId +
                 ", product='" + product + '\'' +
                 ", quantity=" + quantity +
                 ", price=" + price +
