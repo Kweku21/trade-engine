@@ -23,12 +23,12 @@ public class ExchangeOrder {
     public ExchangeOrder() {
     }
 
-    public Long getOrderId() {
+    public Long getClientOrderId() {
         return clientOrderId;
     }
 
-    public void setOrderId(Long orderId) {
-        this.clientOrderId = orderId;
+    public void setClientOrderId(Long clientOrderId) {
+        this.clientOrderId = clientOrderId;
     }
 
     public String getProduct() {

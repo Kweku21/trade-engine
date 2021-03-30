@@ -7,7 +7,6 @@ import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 import redis.clients.jedis.Jedis;
 
-import java.time.LocalDate;
 import java.util.*;
 
 
@@ -223,7 +222,7 @@ public class Spliting {
     protected void checkPriceBidBeforeMakingOrder(Map<String, Object> exchange,String exchangeType,Long quantity) throws JsonProcessingException {
 
         if (checkPrice((Double) exchange.get("BID_PRICE"),order.getPrice(), (Integer) exchange.get("MAX_PRICE_SHIFT"))){
-            createExchangeObject(order.getOrderId(), order.getProduct(),quantity,
+            createExchangeObject(order.getClientOrderId(), order.getProduct(),quantity,
                      order.getPrice(),order.getSide(),order.getStatus(),exchangeType);
 
         }else {
@@ -237,18 +236,16 @@ public class Spliting {
         return orderValue <= marketValue+maxShift && orderValue >= marketValue - maxShift;
     }
 
-    public void createExchangeObject(Long orderId,String product,Long quantity,
+    public void createExchangeObject(Long clientOrderId,String product,Long quantity,
                                       double price,String side, String status,String exchange) throws JsonProcessingException {
 
-        ExchangeOrder exchangeOrder= new ExchangeOrder(orderId,product,quantity,price,side,status,exchange);
+        ExchangeOrder exchangeOrder= new ExchangeOrder(clientOrderId,product,quantity,price,side,status,exchange);
         System.out.println(exchangeOrder);
         pushToQueue(changeObjectToString(exchangeOrder));
     }
 
     public String changeObjectToString(ExchangeOrder exchangeOrder) throws JsonProcessingException {
-
         return mapper.writeValueAsString(exchangeOrder);
-
     }
 
     public void pushToQueue(String order){
