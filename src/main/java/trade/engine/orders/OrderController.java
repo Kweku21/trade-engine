@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import redis.clients.jedis.Jedis;
 
 import java.util.Locale;
+import java.util.stream.IntStream;
 
 @RestController
 @RequestMapping("/trade")
@@ -28,7 +29,10 @@ public class OrderController {
         jedis.publish("report-message",order.toString()+" has been received into the trade-engine service");
         Spliting orderSpliting = new Spliting(order,jedis, order.getSide().toLowerCase(Locale.ROOT));
 
-        orderSpliting.sendExchange();
+        for (int i = 1; i<=10;i++){
+            orderSpliting.sendExchange();
+        }
+
 
         return new ResponseEntity<>("Order is been processed ", HttpStatus.OK);
     }

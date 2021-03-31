@@ -9,6 +9,7 @@ import redis.clients.jedis.Jedis;
 
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.IntStream;
 
 
 public class Spliting {
@@ -156,7 +157,7 @@ public class Spliting {
                     //Buy the rest from other
                 }
 
-                else if ((Integer)firstMallonOrder.get(exchangeType) < (Integer)secondMallonOrder.get(exchangeType)){
+                else if (firstMallon.intValue() < secondMallon.intValue()){
 
                     //check how many to and buy from second
 
@@ -282,7 +283,13 @@ public class Spliting {
 //        spliting.getMallonOrder("1");
 
 //        System.out.println(spliting.getSecondPrice());
-        spliting.sendExchange();
+//        spliting.sendExchange();
+        for (int i = 1; i<=10;i++){
+            spliting.sendExchange();
+        }
+
+        IntStream intStream = IntStream.range(20, 30);
+//        intStream.forEach(spliting.sendExchange());
     }
 
 }
