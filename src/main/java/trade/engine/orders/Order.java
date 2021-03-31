@@ -1,11 +1,10 @@
 package trade.engine.orders;
 
 import java.time.LocalDate;
-import java.time.LocalTime;
 
 public class Order {
 
-    private Long orderId;
+    private Long clientOrderId;
     private String product;
     private Long quantity;
     private double price;
@@ -17,7 +16,7 @@ public class Order {
     private LocalDate createAt;
 
 
-    public Order(Long orderId,
+    public Order(Long ClientOrderId,
                  String product,
                  Long quantity,
                  double price,
@@ -27,7 +26,7 @@ public class Order {
                  Long clientId,
                  String validationStatus,
                  LocalDate createAt) {
-        this.orderId = orderId;
+        this.clientOrderId = ClientOrderId;
         this.product = product;
         this.quantity = quantity;
         this.price = price;
@@ -42,12 +41,12 @@ public class Order {
     public Order() {
     }
 
-    public Long getOrderId() {
-        return orderId;
+    public Long getClientOrderId() {
+        return clientOrderId;
     }
 
-    public void setOrderId(Long orderId) {
-        this.orderId = orderId;
+    public void setClientOrderId(Long clientOrderId) {
+        this.clientOrderId = clientOrderId;
     }
 
     public Long getPortfolioId() {
@@ -127,7 +126,7 @@ public class Order {
     @Override
     public String toString() {
         return "Order{" +
-                "orderId=" + orderId +
+                "clientOrderId=" + clientOrderId +
                 ", product='" + product + '\'' +
                 ", quantity=" + quantity +
                 ", price=" + price +
