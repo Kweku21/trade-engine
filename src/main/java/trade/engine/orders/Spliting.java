@@ -212,6 +212,7 @@ public class Spliting {
 
             }
             else {
+                publishToReport("Trade-Engine: No place to trade order");
                 System.out.println("No place to trade order");
             }
         }
