@@ -267,11 +267,11 @@ public class Spliting {
 
     public static void main(String[] args) throws JsonProcessingException {
 
-        Order order = new Order(1L,"GOOGL",100L,1.5,
-                "BUY","PENDING",1L,2L,"done", LocalDate.now());
+        Order order = new Order(1L,"GOOGL",10L,0.5,
+                "BUY","PENDING",2L,2L,"done", LocalDate.now());
 
-        Order order1 = new Order(1L,"ORCL",51L,5.0,
-                "BUY","PENDING",2L,1L,"VALIDATED", LocalDate.now());
+        Order order1 = new Order(1L,"GOOGL",1000L,0.4,
+                "SELL","PENDING",2L,2L,"VALIDATED", LocalDate.now());
 
 
 
@@ -280,15 +280,28 @@ public class Spliting {
 
         Spliting spliting = new Spliting(order,jedis, order.getSide().toLowerCase(Locale.ROOT));
 
+        Spliting spliting2 = new Spliting(order1,jedis, order.getSide().toLowerCase(Locale.ROOT));
+
 //        spliting.getMallonOrder("1");
 
 //        System.out.println(spliting.getSecondPrice());
 //        spliting.sendExchange();
-        for (int i = 1; i<=10;i++){
-            spliting.sendExchange();
+        for (int k=1; k<=100;k++){
+            for (int i = 1; i<=200;i++){
+                System.out.println("Selling");
+                spliting2.sendExchange();
+            }
+
+            for (int i = 1; i<=100;i++){
+                System.out.println("Buying");
+                spliting.sendExchange();
+            }
+
+
         }
 
-        IntStream intStream = IntStream.range(20, 30);
+
+//        IntStream intStream = IntStream.range(20, 30);
 //        intStream.forEach(spliting.sendExchange());
     }
 
