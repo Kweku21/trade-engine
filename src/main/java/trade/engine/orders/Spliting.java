@@ -270,7 +270,7 @@ public class Spliting {
     }
 
     public void publishToReport(String message ){
-        jedis.publish("report-message",message);
+        jedis.publish("report-message","Trade Engine "+message);
     }
 
 
