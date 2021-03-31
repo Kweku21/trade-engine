@@ -123,10 +123,10 @@ public class Spliting {
 
             if (firstMallonOrder != null && secondMallonOrder != null){
 
-                int firstMallon = (int) firstMallonOrder.get(exchangeType);
-                int secondMallon = (int) secondMallonOrder.get(exchangeType);
+                Number firstMallon = (Number) firstMallonOrder.get(exchangeType);
+                Number secondMallon = (Number) secondMallonOrder.get(exchangeType);
 
-                if (firstMallon > secondMallon){
+                if (firstMallon.intValue() > secondMallon.intValue()){
 
                     //Check how many quantity and buy from first
                     buyQuantity = (int) firstMallonOrder.get(exchangeSide);
@@ -226,7 +226,7 @@ public class Spliting {
 
     protected void checkPriceBidBeforeMakingOrder(Map<String, Object> exchange,String exchangeType,Long quantity) throws JsonProcessingException {
 
-        if (checkPrice((Integer) exchange.get("BID_PRICE"),order.getPrice(), (Integer) exchange.get("MAX_PRICE_SHIFT"))){
+        if (checkPrice((Number) exchange.get("BID_PRICE"),order.getPrice(), (Integer) exchange.get("MAX_PRICE_SHIFT"))){
             createExchangeObject(order.getClientOrderId(), order.getProduct(),quantity,
                      order.getPrice(),order.getSide(),order.getStatus(),exchangeType);
 
@@ -237,8 +237,8 @@ public class Spliting {
 
     }
 
-    public Boolean checkPrice(Integer marketValue,Double orderValue,int maxShift){
-        return orderValue <= marketValue+maxShift && orderValue >= marketValue - maxShift;
+    public Boolean checkPrice(Number marketValue,Double orderValue,int maxShift){
+        return orderValue <= marketValue.intValue()+maxShift && orderValue >= marketValue.intValue() - maxShift;
     }
 
     public void createExchangeObject(Long clientOrderId,String product,Long quantity,
@@ -268,6 +268,9 @@ public class Spliting {
 
         Order order = new Order(1L,"GOOGL",100L,1.5,
                 "BUY","PENDING",1L,2L,"done", LocalDate.now());
+
+        Order order1 = new Order(1L,"ORCL",51L,5.0,
+                "BUY","PENDING",2L,1L,"VALIDATED", LocalDate.now());
 
 
 
