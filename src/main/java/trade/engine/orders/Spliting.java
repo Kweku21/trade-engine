@@ -7,6 +7,7 @@ import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 import redis.clients.jedis.Jedis;
 
+import java.time.LocalDate;
 import java.util.*;
 
 
@@ -122,7 +123,10 @@ public class Spliting {
 
             if (firstMallonOrder != null && secondMallonOrder != null){
 
-                if ((Double)firstMallonOrder.get(exchangeType) > (Double)secondMallonOrder.get(exchangeType)){
+                int firstMallon = (int) firstMallonOrder.get(exchangeType);
+                int secondMallon = (int) secondMallonOrder.get(exchangeType);
+
+                if (firstMallon > secondMallon){
 
                     //Check how many quantity and buy from first
                     buyQuantity = (int) firstMallonOrder.get(exchangeSide);
@@ -152,7 +156,7 @@ public class Spliting {
                     //Buy the rest from other
                 }
 
-                else if ((Double)firstMallonOrder.get(exchangeType) < (Double)secondMallonOrder.get(exchangeType)){
+                else if ((Integer)firstMallonOrder.get(exchangeType) < (Integer)secondMallonOrder.get(exchangeType)){
 
                     //check how many to and buy from second
 
@@ -212,7 +216,7 @@ public class Spliting {
 
             }
             else {
-                publishToReport("Trade-Engine: No place to trade order");
+                publishToReport("No place to trade order");
                 System.out.println("No place to trade order");
             }
         }
@@ -222,7 +226,7 @@ public class Spliting {
 
     protected void checkPriceBidBeforeMakingOrder(Map<String, Object> exchange,String exchangeType,Long quantity) throws JsonProcessingException {
 
-        if (checkPrice((Double) exchange.get("BID_PRICE"),order.getPrice(), (Integer) exchange.get("MAX_PRICE_SHIFT"))){
+        if (checkPrice((Integer) exchange.get("BID_PRICE"),order.getPrice(), (Integer) exchange.get("MAX_PRICE_SHIFT"))){
             createExchangeObject(order.getClientOrderId(), order.getProduct(),quantity,
                      order.getPrice(),order.getSide(),order.getStatus(),exchangeType);
 
@@ -233,7 +237,7 @@ public class Spliting {
 
     }
 
-    public Boolean checkPrice(Double marketValue,Double orderValue,int maxShift){
+    public Boolean checkPrice(Integer marketValue,Double orderValue,int maxShift){
         return orderValue <= marketValue+maxShift && orderValue >= marketValue - maxShift;
     }
 
@@ -257,6 +261,25 @@ public class Spliting {
 
     public void publishToReport(String message ){
         jedis.publish("report-message","Trade Engine "+message);
+    }
+
+
+    public static void main(String[] args) throws JsonProcessingException {
+
+        Order order = new Order(1L,"GOOGL",100L,1.5,
+                "BUY","PENDING",1L,2L,"done", LocalDate.now());
+
+
+
+        Jedis jedis = new Jedis("redis-17587.c92.us-east-1-3.ec2.cloud.redislabs.com", 17587);
+        jedis.auth("rLAKmB4fpXsRZEv9eJBkbddhTYc1RWtK");
+
+        Spliting spliting = new Spliting(order,jedis, order.getSide().toLowerCase(Locale.ROOT));
+
+//        spliting.getMallonOrder("1");
+
+//        System.out.println(spliting.getSecondPrice());
+        spliting.sendExchange();
     }
 
 }
